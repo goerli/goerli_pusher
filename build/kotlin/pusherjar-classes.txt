@@ -1,1 +1,0 @@
-/home/ligi/git/goerli_pusher/build/classes/kotlin/main/net/goerli/pusher/MainKt.class
