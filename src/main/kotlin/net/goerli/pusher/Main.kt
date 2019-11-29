@@ -1,23 +1,23 @@
 package net.goerli.pusher
 
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import org.kethereum.DEFAULT_GAS_PRICE
 import org.kethereum.crypto.createEthereumKeyPair
 import org.kethereum.eip155.signViaEIP155
 import org.kethereum.erc681.ERC681
 import org.kethereum.erc681.generateURL
+import org.kethereum.flows.getTransactionFlow
 import org.kethereum.functions.encodeRLP
 import org.kethereum.keystore.api.InitializingFileKeyStore
 import org.kethereum.model.Address
 import org.kethereum.model.ChainId
-import org.kethereum.model.SignedTransaction
 import org.kethereum.rpc.HttpEthereumRPC
-import org.kethereum.rpc.model.BlockInformation
 import org.komputing.kethereum.erc1450.ERC1450TransactionGenerator
 import org.walleth.console.barcodes.printQR
 import org.walleth.khex.clean0xPrefix
 import org.walleth.khex.toHexString
 import java.io.File
-import java.lang.Thread.sleep
 import java.math.BigInteger
 import java.math.BigInteger.ZERO
 
@@ -40,40 +40,21 @@ val keyStore = InitializingFileKeyStore(File("keystore")).apply {
 val address = keyStore.getAddresses().first()
 val keyPair = keyStore.getKeyForAddress(address)!!
 
-fun main() {
+suspend fun main() {
 
     val erc681 = ERC681(address = address.hex)
     printQR(erc681.generateURL())
     println(address.cleanHex)
 
-    var lastBlock = rpc.blockNumber()?.result
-    var currentBlock: BlockInformation?
+    getTransactionFlow(rpc).filter { tx ->
+        FAUCET_ADDRESS.any { address -> tx.transaction.from.toString().toLowerCase() == address }
+    }.collect { tx ->
+        print("\n")
+        println("tx from faucet: " + tx.transaction.to)
 
-    while (true) {
-        val newBlock = rpc.blockNumber()?.result
-        if (newBlock != null && newBlock != lastBlock) {
-
-            currentBlock = rpc.getBlockByNumber(newBlock)
-
-            print(".")
-            val transactionsFromFaucet: List<SignedTransaction> =
-                currentBlock?.transactions?.filter { tx ->
-                    FAUCET_ADDRESS.any { address -> tx.transaction.from.toString().toLowerCase() == address }
-                } ?: emptyList()
-
-            transactionsFromFaucet.forEach {
-                print("\n")
-                println("tx from faucet: " + it.transaction.to)
-
-                it.transaction.to?.let { toAddress ->
-                    sendTransaction(toAddress)
-                }
-            }
-
-            lastBlock = newBlock
+        tx.transaction.to?.let { toAddress ->
+            sendTransaction(toAddress)
         }
-
-        sleep(2000)
     }
 }
 
