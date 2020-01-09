@@ -12,10 +12,10 @@ import org.kethereum.functions.encodeRLP
 import org.kethereum.keystore.api.InitializingFileKeyStore
 import org.kethereum.model.Address
 import org.kethereum.model.ChainId
+import org.kethereum.rpc.EthereumRPCException
 import org.kethereum.rpc.HttpEthereumRPC
 import org.komputing.kethereum.erc1450.ERC1450TransactionGenerator
 import org.walleth.console.barcodes.printQR
-import org.walleth.khex.clean0xPrefix
 import org.walleth.khex.toHexString
 import java.io.File
 import java.math.BigInteger
@@ -41,7 +41,6 @@ val address = keyStore.getAddresses().first()
 val keyPair = keyStore.getKeyForAddress(address)!!
 
 suspend fun main() {
-
     val erc681 = ERC681(address = address.hex)
     printQR(erc681.generateURL())
     println(address.cleanHex)
@@ -66,7 +65,7 @@ private fun sendTransaction(toAddress: Address) {
     val transaction = mintableToken.mint(toAddress, BigInteger("420000000000000000000")).copy(
         chain = chain.value,
         value = ZERO,
-        nonce = BigInteger(txCount?.result?.clean0xPrefix(), 16),
+        nonce = txCount,
         gasPrice = DEFAULT_GAS_PRICE,
         gasLimit = BigInteger("100000")
     )
@@ -74,11 +73,10 @@ private fun sendTransaction(toAddress: Address) {
 
     val tx = transaction.encodeRLP(signature).toHexString()
 
-    val sendTx = rpc.sendRawTransaction(tx)
-
-    if (sendTx?.result != null) {
-        println("send tx " + sendTx.result)
-    } else {
-        println("send tx error " + sendTx?.error)
+    try {
+        val result = rpc.sendRawTransaction(tx)
+        println ("sending tx OK ($result)")
+    } catch (rpcException : EthereumRPCException) {
+        println("send tx error " + rpcException.message)
     }
 }
