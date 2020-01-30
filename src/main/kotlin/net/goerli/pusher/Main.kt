@@ -23,8 +23,8 @@ import java.math.BigInteger
 import java.math.BigInteger.ZERO
 
 private val FAUCET_ADDRESS = listOf(
-    "0x8ced5ad0d8da4ec211c17355ed3dbfec4cf0e5b9", // simple
-    "0x8c1e1e5b47980d214965f3bd8ea34c413e120ae4" // social
+    Address("0x8ced5ad0d8da4ec211c17355ed3dbfec4cf0e5b9"), // simple
+    Address("0x8c1e1e5b47980d214965f3bd8ea34c413e120ae4") // social
 )
 
 val TOKEN_CONTRACT_ADDRESS = Address("0x7af963cF6D228E564e2A0aA0DdBF06210B38615D")
@@ -47,7 +47,7 @@ suspend fun main() {
     println(address.cleanHex)
 
     getTransactionFlow(rpc).filter { tx ->
-        FAUCET_ADDRESS.any { address -> tx.transaction.from.toString().toLowerCase() == address }
+        FAUCET_ADDRESS.any { address -> tx.transaction.from == address }
     }.collect { tx ->
         print("\n")
         println("tx from faucet: " + tx.transaction.to)
@@ -76,8 +76,8 @@ private fun sendTransaction(toAddress: Address) {
 
     try {
         val result = rpc.sendRawTransaction(tx)
-        println ("sending tx OK ($result)")
-    } catch (rpcException : EthereumRPCException) {
+        println("sending tx OK ($result)")
+    } catch (rpcException: EthereumRPCException) {
         println("send tx error " + rpcException.message)
     }
 }
