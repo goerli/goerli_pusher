@@ -13,7 +13,8 @@ import org.kethereum.keystore.api.InitializingFileKeyStore
 import org.kethereum.model.Address
 import org.kethereum.model.ChainId
 import org.kethereum.rpc.EthereumRPCException
-import org.kethereum.rpc.HttpEthereumRPC
+import org.kethereum.rpc.min3.GOERLI_BOOTNODES
+import org.kethereum.rpc.min3.MIN3RPC
 import org.komputing.kethereum.erc1450.ERC1450TransactionGenerator
 import org.walleth.console.barcodes.printQR
 import org.walleth.khex.toHexString
@@ -27,8 +28,8 @@ private val FAUCET_ADDRESS = listOf(
 )
 
 val TOKEN_CONTRACT_ADDRESS = Address("0x7af963cF6D228E564e2A0aA0DdBF06210B38615D")
-val rpc = HttpEthereumRPC("https://in3.slock.it/goerli/nd-3")
 val chain = ChainId(5)
+val rpc = MIN3RPC(GOERLI_BOOTNODES)
 
 val keyStore = InitializingFileKeyStore(File("keystore")).apply {
     if (getAddresses().isEmpty()) {
