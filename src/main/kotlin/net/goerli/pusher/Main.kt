@@ -1,5 +1,6 @@
 package net.goerli.pusher
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import org.kethereum.DEFAULT_GAS_PRICE
@@ -58,8 +59,14 @@ suspend fun main() {
     }
 }
 
-private fun sendTransaction(toAddress: Address) {
-    val txCount = rpc.getTransactionCount(address.hex, "latest")
+private suspend fun retrySendTransaction(toAddress: Address) {
+    println("Will retry to send to $toAddress shortly")
+    delay(420)
+    sendTransaction(toAddress)
+}
+
+private suspend fun sendTransaction(toAddress: Address) {
+    val txCount = rpc.getTransactionCount(address.hex, "latest") ?: return retrySendTransaction(address)
 
     val mintableToken = ERC1450TransactionGenerator(TOKEN_CONTRACT_ADDRESS)
 
@@ -76,8 +83,13 @@ private fun sendTransaction(toAddress: Address) {
 
     try {
         val result = rpc.sendRawTransaction(tx)
-        println("sending tx OK ($result)")
+        if (result == null) {
+            println("Problem sending transaction")
+        } else {
+            println("sending tx OK ($result)")
+        }
     } catch (rpcException: EthereumRPCException) {
         println("send tx error " + rpcException.message)
+        retrySendTransaction(address)
     }
 }
