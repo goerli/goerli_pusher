@@ -1,7 +1,7 @@
 buildscript {
     ext {
         KOTLIN_VERSION = "1.3.61"
-        KETHEREUM_VERSION = "0.80.4"
+        KETHEREUM_VERSION = "0.81.7"
     }
 
     repositories {
@@ -31,7 +31,7 @@ dependencies {
     implementation "com.github.walleth.kethereum:eip155:${KETHEREUM_VERSION}"
     implementation "com.github.walleth.kethereum:erc681:${KETHEREUM_VERSION}"
     implementation "com.github.walleth.kethereum:erc1450:${KETHEREUM_VERSION}"
-    implementation "com.github.walleth.kethereum:functions:${KETHEREUM_VERSION}"
+    implementation "com.github.walleth.kethereum:extensions_transactions:${KETHEREUM_VERSION}"
     implementation "com.github.walleth.kethereum:flows:${KETHEREUM_VERSION}"
     implementation "com.github.walleth.kethereum:rpc:${KETHEREUM_VERSION}"
     implementation "com.github.walleth.kethereum:rpc_min3:${KETHEREUM_VERSION}"
