@@ -85,6 +85,7 @@ private suspend fun sendTransaction(toAddress: Address) {
         val result = rpc.sendRawTransaction(tx)
         if (result == null) {
             println("Problem sending transaction")
+            retrySendTransaction(address)
         } else {
             println("sending tx OK ($result)")
         }
